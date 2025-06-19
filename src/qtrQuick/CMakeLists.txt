@@ -67,12 +67,16 @@ install(TARGETS ${PROJECT_NAME}
 # Install QML module
 set(QML_MODULE_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}/qml/QtrQuick")
 
-# Install qmldir and qml files
+# Install qmldir and qml files separately
 install(FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/../qml/qtrQuick/qmldir.in
-    ${CMAKE_CURRENT_SOURCE_DIR}/../qml/qtrQuick/qtrGauge.qml
     DESTINATION ${QML_MODULE_INSTALL_DIR}
     RENAME qmldir
+)
+
+install(FILES
+    ${CMAKE_CURRENT_SOURCE_DIR}/../qml/qtrQuick/qtrGauge.qml
+    DESTINATION ${QML_MODULE_INSTALL_DIR}
 )
 
 # Install the plugin to the QML module directory
