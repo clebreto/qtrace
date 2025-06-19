@@ -54,14 +54,21 @@ mark_as_advanced(CMAKE_OSX_SYSROOT)
 ## Dependencies - Qt
 ## #################################################################
 
-find_package(Qt5Concurrent  REQUIRED)
-find_package(Qt5Core        REQUIRED)
-find_package(Qt5Gui         REQUIRED)
-find_package(Qt5Quick       REQUIRED)
-find_package(Qt5Widgets     REQUIRED)
-
+# Set minimum Qt version and find packages
 set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOUIC ON)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
+# Find Qt6 components
+find_package(Qt6 REQUIRED COMPONENTS Core Concurrent Gui Quick QuickControls2 QuickTemplates2 Widgets)
+
+# Set Qt6 as the default
+set(QT_DEFAULT_MAJOR_VERSION 6)
+
+# Set C++ standard for all targets
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 ## #################################################################
 ## Dependencies - internal

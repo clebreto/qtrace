@@ -1,13 +1,30 @@
 # QTrace
 
-QTrace is a proof of concept project aiming at using concurrency to render fractal images with an emphasis on logic and graphric interfaces separation, using Qt for the logic interface and Qml for the graphic interface. QTrace can easily be extended to handle any kind of raytracing methods.
+QTrace is a proof of concept project aiming at using concurrency to render fractal images with an emphasis on logic and graphic interfaces separation, using Qt 6 for the logic interface and Qml for the graphic interface. QTrace can easily be extended to handle any kind of raytracing methods.
+
+## Requirements
+
+- Qt 6.x (Core, Gui, Quick, QuickControls2, QuickTemplates2, Widgets, Concurrent)
+- CMake 3.5 or later
+- C++17 compatible compiler
 
 ![Screenshot](http://jwintz.me/assets/img/qtrace.png)
 
 ## Build
 
-    $ cmake /path/to/qtr/source/tree -D Ninja
-    $ ninja
+```bash
+mkdir -p build && cd build
+cmake -DCMAKE_BUILD_TYPE=Release ..
+cmake --build .
+```
+
+Or using Ninja (faster builds):
+
+```bash
+mkdir -p build && cd build
+cmake -G Ninja -DCMAKE_BUILD_TYPE=Release ..
+ninja
+```
 
 ## Apps
 
@@ -41,4 +58,10 @@ Renders fractal image in viewport multi threaded.
 
 #### Using qmlscene from source tree root
 
-    $ qmlscene -I qml/ app/qtrNewtonViewer/main.qml
+```bash
+qmlscene -I qml/ app/qtrNewtonViewer/main.qml
+```
+
+## Docker Development
+
+For a containerized development environment with all dependencies pre-installed, see [README-DOCKER.md](README-DOCKER.md).

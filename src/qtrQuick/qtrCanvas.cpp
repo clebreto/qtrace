@@ -70,8 +70,9 @@ void qtrCanvasPrivate::tile(QSize size)
 
     qtrTiler tiler;
     tiler.setWholeSize(size);
-    tiler.setResolutionX(QThread::idealThreadCount()*2);
-    tiler.setResolutionY(QThread::idealThreadCount()*2);
+    int threads = QThread::idealThreadCount();
+    tiler.setResolutionX(threads * 2);
+    tiler.setResolutionY(threads * 2);
 
     this->tiles = tiler.tile();
 }
@@ -104,11 +105,15 @@ qtrCanvas::qtrCanvas(QQuickItem *parent) : QQuickPaintedItem(parent), d(new qtrC
     d->thread_cur = QThreadPool::globalInstance()->activeThreadCount();
     d->thread_max = QThreadPool::globalInstance()->maxThreadCount();
 
-    d->thread_timer.singleShot(100, d, SLOT(update()));
     d->resize_timer.setSingleShot(true);
 
     connect(&d->future_watcher, SIGNAL(progressValueChanged(int)), this, SLOT(onTileRendered(int)));
     connect(&d->resize_timer, SIGNAL(timeout()), this, SLOT(onResize()));
+    
+    // Initial resize if we have valid dimensions
+    if (width() > 0 && height() > 0) {
+        onResize();
+    }
 }
 
 qtrCanvas::~qtrCanvas(void)
@@ -146,15 +151,45 @@ int qtrCanvas::newtonOrder(void)
 
 void qtrCanvas::paint(QPainter *painter)
 {
-    painter->fillRect(boundingRect(), Qt::black);
-    painter->setRenderHints(QPainter::HighQualityAntialiasing);
-    painter->setPen(Qt::red);
+    QRectF rect = boundingRect();
 
-    foreach(qtrTile tile, d->tiles)
-        if (tile.image().isNull())
-	    painter->drawRect(tile.tileRect());
-	else
-	    painter->drawImage(tile.tileRect(), tile.image());
+    // Draw background
+    painter->fillRect(rect, Qt::red);
+    painter->setRenderHints(QPainter::Antialiasing);
+    
+    // Draw border
+    painter->setPen(QPen(Qt::blue, 2));
+    painter->setBrush(Qt::NoBrush);
+    painter->drawRect(rect.adjusted(1, 1, -1, -1));
+    
+    // Draw center crosshair
+    painter->drawLine(rect.center().x(), 0, rect.center().x(), rect.height());
+    painter->drawLine(0, rect.center().y(), rect.width(), rect.center().y());
+    
+    // Draw tiles if we have any
+    if (d->tiles.isEmpty()) {
+        qDebug() << "No tiles to render";
+        // Draw a warning message
+        painter->setPen(Qt::white);
+        painter->drawText(rect, Qt::AlignCenter, "No tiles to render\nSize: " + 
+                         QString::number(rect.width()) + "x" + QString::number(rect.height()));
+    } else {
+        int i = 0;
+        foreach(qtrTile tile, d->tiles) {
+            if (tile.image().isNull()) {
+                qDebug() << "Tile" << i << "has null image";
+                painter->setPen(Qt::green);
+                painter->setBrush(Qt::NoBrush);
+                painter->drawRect(tile.tileRect());
+            } else {
+                painter->drawImage(tile.tileRect(), tile.image());
+            }
+            i++;
+        }
+    }
+    
+    // Force an update to keep the animation going
+    update();
 }
 
 int qtrCanvas::curNumberOfThreads(void)
@@ -204,10 +239,13 @@ int qtrCanvas::curProgressValue(void)
 
 void qtrCanvas::onResize(void)
 {
-    if (d->future_watcher.isRunning())
-	d->future_watcher.waitForFinished();
 
-    d->tile(this->boundingRect().size());
+    if (d->future_watcher.isRunning()) {
+        d->future_watcher.waitForFinished();
+    }
+
+    d->tile(this->boundingRect().size().toSize());
+
     d->render();
 
     emit minProgressValueChanged();
@@ -223,14 +261,16 @@ void qtrCanvas::onTileRendered(int)
 
 void qtrCanvas::geometryChanged(const QRectF& current, const QRectF& previous)
 {
-    Q_UNUSED(current);
-    Q_UNUSED(previous);
 
-    if (d->future_watcher.isRunning())
-	d->future_watcher.cancel();
+    if (d->future_watcher.isRunning()) {
+        qDebug() << "Cancelling current rendering";
+        d->future_watcher.cancel();
+    }
 
-    if (d->resize_timer.isActive())
-	d->resize_timer.stop();
+    if (d->resize_timer.isActive()) {
+        qDebug() << "Stopping existing resize timer";
+        d->resize_timer.stop();
+    }
 
     d->resize_timer.start(500);
 }

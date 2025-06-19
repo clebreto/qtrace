@@ -49,7 +49,9 @@ int main(int argc, char **argv)
 // Multiple concurrent run
 // /////////////////////////////////////////////////////////////////
 
-    QFuture<void> future = QtConcurrent::map(tiles, qtrRenderer::newton);
+    QFuture<void> future = QtConcurrent::map(tiles, [](qtrTile &tile) {
+        qtrRenderer::newton(tile);
+    });
 
     QFutureWatcher<void> watcher;
     watcher.setFuture(future);

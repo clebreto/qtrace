@@ -18,13 +18,22 @@ project(qtrNewtonWriter-mt)
 ## Build rules
 ## #################################################################
 
+# Create executable
 add_executable(${PROJECT_NAME} main.cpp)
 
-qt5_use_modules(${PROJECT_NAME} Concurrent)
-qt5_use_modules(${PROJECT_NAME} Core)
-qt5_use_modules(${PROJECT_NAME} Gui)
+# Link Qt6 libraries and dependencies
+target_link_libraries(${PROJECT_NAME} PRIVATE
+    Qt6::Core
+    Qt6::Gui
+    Qt6::Concurrent
+    qtrCore
+)
 
-target_link_libraries(${PROJECT_NAME} qtrCore)
+# Set C++ standard for this target
+set_target_properties(${PROJECT_NAME} PROPERTIES
+    CXX_STANDARD 17
+    CXX_STANDARD_REQUIRED ON
+)
 
 ## #################################################################
 ## Install rules - targets

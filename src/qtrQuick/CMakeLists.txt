@@ -36,12 +36,23 @@ add_library(${PROJECT_NAME} SHARED
   ${${PROJECT_NAME}_SOURCES}
   ${${PROJECT_NAME}_HEADERS})
 
-qt5_use_modules(${PROJECT_NAME} Concurrent)
-qt5_use_modules(${PROJECT_NAME} Core)
-qt5_use_modules(${PROJECT_NAME} Gui)
-qt5_use_modules(${PROJECT_NAME} Quick)
+# Link Qt6 libraries and dependencies
+target_link_libraries(${PROJECT_NAME} PRIVATE
+    Qt6::Core
+    Qt6::Gui
+    Qt6::Quick
+    Qt6::Concurrent
+    Qt6::QuickControls2
+    Qt6::QuickTemplates2
+    Qt6::Widgets
+    qtrCore
+)
 
-target_link_libraries(${PROJECT_NAME} qtrCore)
+# Set C++ standard for this target
+set_target_properties(${PROJECT_NAME} PROPERTIES
+    CXX_STANDARD 17
+    CXX_STANDARD_REQUIRED ON
+)
 
 ## ###################################################################
 ## Install rules - targets

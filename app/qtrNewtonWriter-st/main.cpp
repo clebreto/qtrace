@@ -52,7 +52,9 @@ int main(int argc, char **argv)
 // Single concurrent run
 // /////////////////////////////////////////////////////////////////
 
-    QFuture<QImage> future = QtConcurrent::run(qtrRenderer::newtonImage, tile);
+    QFuture<QImage> future = QtConcurrent::run([&tile]() -> QImage {
+        return qtrRenderer::newtonImage(tile);
+    });
 
     QFutureWatcher<QImage> watcher;
     watcher.setFuture(future);

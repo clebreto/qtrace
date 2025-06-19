@@ -34,14 +34,25 @@ set(${PROJECT_NAME}_SOURCES
 
 add_library(${PROJECT_NAME} SHARED
   ${${PROJECT_NAME}_SOURCES}
-  ${${PROJECT_NAME}_HEADERS})
+  ${${PROJECT_NAME}_HEADERS}
+)
 
-qt5_use_modules(${PROJECT_NAME} Core)
-qt5_use_modules(${PROJECT_NAME} Gui)
+# Link Qt6 libraries and dependencies
+target_link_libraries(${PROJECT_NAME} PRIVATE
+    Qt6::Core
+    Qt6::Gui
+    Qt6::Concurrent
+)
 
 if(UNIX AND NOT APPLE)
-  target_link_libraries(${PROJECT_NAME} bsd)
+  target_link_libraries(${PROJECT_NAME} PRIVATE bsd)
 endif(UNIX AND NOT APPLE)
+
+# Set C++ standard for this target
+set_target_properties(${PROJECT_NAME} PROPERTIES
+    CXX_STANDARD 17
+    CXX_STANDARD_REQUIRED ON
+)
 
 ## ###################################################################
 ## Install rules - targets
