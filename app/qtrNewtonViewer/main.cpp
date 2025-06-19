@@ -151,8 +151,7 @@ int main(int argc, char *argv[])
         }
         
         if (QFileInfo::exists(absEnvPath) && 
-            !engine.importPathList().contains(absEnvPath) && 
-            absEnvPath != absoluteInstallPath) {
+            !engine.importPathList().contains(absEnvPath)) {
             engine.addImportPath(absEnvPath);
             qCDebug(lcViewer) << "Added environment import path:" << absEnvPath;
         }
