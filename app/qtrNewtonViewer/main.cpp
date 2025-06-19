@@ -77,37 +77,60 @@ int main(int argc, char *argv[])
     // Clear all existing import paths to avoid duplicates
     engine.setImportPathList({});
     
-    // 1. Define the install path where QML modules are installed
-    QString installPath = "/app/install/qml";
-    QString absoluteInstallPath = QDir(installPath).absolutePath();
+    // 1. Define possible QML module paths
+    QStringList possiblePaths = {
+        // Development build path
+        QCoreApplication::applicationDirPath() + "/../qml",
+        QCoreApplication::applicationDirPath() + "/../lib/qml",
+        // Installed path
+        QCoreApplication::applicationDirPath() + "/../Resources/qml",
+        "/usr/local/qml",
+        "/usr/local/lib/qml",
+        "/usr/local/opt/qt/lib/qml",
+        "/opt/homebrew/lib/qml",
+        "/opt/homebrew/opt/qt@6/lib/qml",
+        "/usr/local/opt/qt@6/lib/qml",
+        // Fallback to install path
+        "/app/install/qml"
+    };
     
-    qCDebug(lcViewer) << "Looking for QML modules in:" << absoluteInstallPath;
+    // Add the application's directory as a fallback
+    possiblePaths.prepend(QCoreApplication::applicationDirPath());
     
-    // 2. Add the install path explicitly
-    if (QFileInfo::exists(absoluteInstallPath)) {
-        engine.addImportPath(absoluteInstallPath);
-        qCDebug(lcViewer) << "Added explicit import path:" << absoluteInstallPath;
+    // Make paths absolute and remove duplicates
+    QSet<QString> uniquePaths;
+    for (const QString &path : qAsConst(possiblePaths)) {
+        QString absPath = QDir(path).absolutePath();
+        if (QFileInfo::exists(absPath)) {
+            uniquePaths.insert(absPath);
+        }
+    }
+    
+    // Add the paths to the engine
+    bool foundQtrQuick = false;
+    for (const QString &path : qAsConst(uniquePaths)) {
+        engine.addImportPath(path);
+        qCDebug(lcViewer) << "Added import path:" << path;
         
-        // Verify QtrQuick module exists
-        QString qtrQuickPath = QDir(absoluteInstallPath + "/QtrQuick").absolutePath();
+        // Check if QtrQuick exists in this path
+        QString qtrQuickPath = path + "/QtrQuick";
         if (QFileInfo::exists(qtrQuickPath)) {
             qCDebug(lcViewer) << "Found QtrQuick module at:" << qtrQuickPath;
+            foundQtrQuick = true;
             
-            // Check if the plugin file exists
-            QString pluginPath = qtrQuickPath + "/libqtrQuick.so";
-            if (QFileInfo::exists(pluginPath)) {
-                qCDebug(lcViewer) << "Found QtrQuick plugin at:" << pluginPath;
+            // Check for plugin files (support both .so and .dylib extensions)
+            QStringList pluginFiles = QDir(qtrQuickPath).entryList({"libqtrQuick.*"}, QDir::Files);
+            if (!pluginFiles.isEmpty()) {
+                qCDebug(lcViewer) << "Found QtrQuick plugin:" << pluginFiles;
             } else {
-                qCWarning(lcViewer) << "QtrQuick plugin not found at:" << pluginPath;
-                // List directory contents for debugging
-                QDir dir(qtrQuickPath);
-                qCDebug(lcViewer) << "Directory contents:" << dir.entryList();
+                qCWarning(lcViewer) << "No QtrQuick plugin found in:" << qtrQuickPath;
+                qCDebug(lcViewer) << "Directory contents:" << QDir(qtrQuickPath).entryList();
             }
-        } else {
-            qCWarning(lcViewer) << "QtrQuick module not found in:" << qtrQuickPath;
         }
-    } else {
-        qCWarning(lcViewer) << "Install path not found:" << absoluteInstallPath;
+    }
+    
+    if (!foundQtrQuick) {
+        qCWarning(lcViewer) << "QtrQuick module not found in any of the search paths";
     }
     
     // 3. Add system Qt import paths
