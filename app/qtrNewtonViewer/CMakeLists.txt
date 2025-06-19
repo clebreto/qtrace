@@ -47,11 +47,14 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
 set(QML_IMPORT_PATHS "${CMAKE_INSTALL_PREFIX}/qml")
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
     # In debug builds, also look in the build directory
-    set(QML_IMPORT_PATHS "${CMAKE_CURRENT_BINARY_DIR}/qml;${QML_IMPORT_PATHS}")
+    list(PREPEND QML_IMPORT_PATHS "${CMAKE_CURRENT_BINARY_DIR}/qml")
 endif()
 
+# Join paths with the system path separator and escape any special characters
+string(REPLACE ";" "\\;" ESCAPED_QML_IMPORT_PATHS "${QML_IMPORT_PATHS}")
+
 target_compile_definitions(${PROJECT_NAME} PRIVATE
-    QML_IMPORT_PATH="${QML_IMPORT_PATHS}"
+    "QML_IMPORT_PATH=${ESCAPED_QML_IMPORT_PATHS}"
 )
 
 # Set runtime environment for the target
