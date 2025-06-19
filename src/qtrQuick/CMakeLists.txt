@@ -70,13 +70,21 @@ set(QML_MODULE_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}/qml/QtrQuick")
 # Install qmldir and qml files separately
 install(FILES
     ${CMAKE_SOURCE_DIR}/qml/qtrQuick/qmldir.in
-    DESTINATION ${QML_MODULE_INSTALL_DIR}
+    DESTINATION ${CMAKE_INSTALL_PREFIX}/qml/QtrQuick
     RENAME qmldir
 )
 
 install(FILES
     ${CMAKE_SOURCE_DIR}/qml/qtrQuick/qtrGauge.qml
-    DESTINATION ${QML_MODULE_INSTALL_DIR}
+    DESTINATION ${CMAKE_INSTALL_PREFIX}/qml/QtrQuick
+)
+
+# Install gauge image resources
+install(FILES
+    ${CMAKE_SOURCE_DIR}/qml/qtrQuick/qtrGauge_background.png
+    ${CMAKE_SOURCE_DIR}/qml/qtrQuick/qtrGauge_center.png
+    ${CMAKE_SOURCE_DIR}/qml/qtrQuick/qtrGauge_needle.png
+    DESTINATION ${CMAKE_INSTALL_PREFIX}/qml/QtrQuick
 )
 
 # Install the plugin to the QML module directory
