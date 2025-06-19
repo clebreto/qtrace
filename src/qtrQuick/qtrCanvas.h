@@ -95,7 +95,7 @@ protected slots:
     void onTileRendered(int);
 
 protected:
-    void geometryChanged(const QRectF& current, const QRectF& previous);
+    void geometryChange(const QRectF& newGeometry, const QRectF& oldGeometry) override;
 
 private:
     qtrCanvasPrivate *d;
